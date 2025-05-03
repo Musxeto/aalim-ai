@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ChatContainer } from './components/ChatContainer';
 import { Chat, Message } from './types';
+import { askQuestion } from './services/api';
 
 const WELCOME_MESSAGE: Message = {
   id: uuidv4(),
@@ -33,6 +34,8 @@ function App() {
   });
 
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     localStorage.setItem('chats', JSON.stringify(chats));
@@ -62,7 +65,7 @@ function App() {
     setActiveChatId(newChat.id);
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!activeChatId) return;
 
     const newMessage: Message = {
@@ -72,7 +75,7 @@ function App() {
       timestamp: new Date()
     };
 
-    setChats(chats.map(chat => {
+    setChats(prevChats => prevChats.map(chat => {
       if (chat.id === activeChatId) {
         return {
           ...chat,
@@ -82,16 +85,17 @@ function App() {
       return chat;
     }));
 
-    // Simulate bot response
-    setTimeout(() => {
+    setIsLoading(true);
+    try {
+      const response = await askQuestion(content);
       const botResponse: Message = {
         id: uuidv4(),
-        content: "I'm processing your request. This is a placeholder response.",
+        content: response.answer,
         sender: 'bot',
         timestamp: new Date()
       };
 
-      setChats(chats.map(chat => {
+      setChats(prevChats => prevChats.map(chat => {
         if (chat.id === activeChatId) {
           return {
             ...chat,
@@ -100,28 +104,53 @@ function App() {
         }
         return chat;
       }));
-    }, 1000);
+    } catch (error) {
+      console.error('Error getting response:', error);
+      const errorMessage: Message = {
+        id: uuidv4(),
+        content: "I apologize, but I'm having trouble connecting to my knowledge base. Please try again later.",
+        sender: 'bot',
+        timestamp: new Date()
+      };
+
+      setChats(prevChats => prevChats.map(chat => {
+        if (chat.id === activeChatId) {
+          return {
+            ...chat,
+            messages: [...chat.messages, errorMessage]
+          };
+        }
+        return chat;
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const activeChat = chats.find(chat => chat.id === activeChatId);
 
   return (
     <ThemeProvider>
-      <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
         <Sidebar
           chats={chats}
           activeChatId={activeChatId}
           onChatSelect={setActiveChatId}
           onNewChat={handleNewChat}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
         />
-        <div className="flex-1 flex flex-col">
-          <Header />
-          {activeChat && (
-            <ChatContainer
-              messages={activeChat.messages}
-              onSendMessage={handleSendMessage}
-            />
-          )}
+        <div className="flex-1 flex flex-col min-h-0">
+          <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+          <main className="flex-1 relative min-h-0">
+            {activeChat && (
+              <ChatContainer
+                messages={activeChat.messages}
+                onSendMessage={handleSendMessage}
+                isLoading={isLoading}
+              />
+            )}
+          </main>
         </div>
       </div>
     </ThemeProvider>

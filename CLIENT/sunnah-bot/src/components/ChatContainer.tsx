@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { Message } from '../types';
@@ -6,35 +6,42 @@ import { Message } from '../types';
 interface ChatContainerProps {
   messages: Message[];
   onSendMessage: (content: string) => void;
+  isLoading: boolean;
 }
 
-export function ChatContainer({ messages, onSendMessage }: ChatContainerProps) {
+export function ChatContainer({ messages, onSendMessage, isLoading }: ChatContainerProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesContainerRef.current) {
+      const { scrollHeight, clientHeight } = messagesContainerRef.current;
+      messagesContainerRef.current.scrollTop = scrollHeight - clientHeight;
+    }
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = async (content: string) => {
-    setIsLoading(true);
-    await onSendMessage(content);
-    setIsLoading(false);
-  };
-
   return (
-    <div className="flex-1 flex flex-col bg-gray-50 dark:bg-gray-900">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
-          <ChatMessage key={message.id} message={message} />
-        ))}
-        <div ref={messagesEndRef} />
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-6 space-y-4"
+      >
+        <div className="max-w-4xl mx-auto w-full">
+          {messages.map((message) => (
+            <ChatMessage key={message.id} message={message} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
-      <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+      <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+        <div className="max-w-4xl mx-auto w-full">
+          <ChatInput onSendMessage={onSendMessage} disabled={isLoading} />
+        </div>
+      </div>
     </div>
   );
 } 
