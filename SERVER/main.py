@@ -6,8 +6,14 @@ from langchain.prompts import ChatPromptTemplate
 import ollama
 import time
 import uvicorn
+import requests
+import os
+from dotenv import load_dotenv
+
 
 app = FastAPI()
+
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '../.env'))
 
 embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
@@ -53,15 +59,41 @@ def query_rag(question: str, k: int = 5) -> str:
         question=question
     )
 
-    response = ollama.chat(
-        model='llama3.2',
-        messages=[{'role': 'user', 'content': prompt}],
-        options={'temperature': 0.3}
+    # Gemini API implementation
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Make sure to set this environment variable
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY environment variable not set")
+    
+    response = requests.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}",
+        headers={'Content-Type': 'application/json'},
+        json={
+            "contents": [{
+                "parts": [{"text": prompt}]
+            }]
+        }
     )
+    
+    if response.status_code != 200:
+        raise Exception(f"Gemini API request failed with status {response.status_code}: {response.text}")
+    
+    try:
+        gemini_response = response.json()
+        answer = gemini_response['candidates'][0]['content']['parts'][0]['text']
+    except (KeyError, IndexError) as e:
+        raise Exception(f"Failed to parse Gemini API response: {str(e)}")
+
+    # Ollama implementation (commented out)
+    # response = ollama.chat(
+    #     model='llama3.2',
+    #     messages=[{'role': 'user', 'content': prompt}],
+    #     options={'temperature': 0.3}
+    # )
+    # answer = response['message']['content'].strip()
 
     total_time = time.time() - start_time
     print(f"RAG response time: {total_time:.2f}s")
-    return response['message']['content'].strip()
+    return answer
 
 @app.post("/ask")
 async def ask_question(data: QuestionInput):

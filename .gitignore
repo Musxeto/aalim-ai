@@ -17,3 +17,4 @@ transcripts/
 
 failed_ids.txt
 *.tmp
+.env
