@@ -33,11 +33,14 @@ dist-ssr
 # Database
 db/
 chroma_db/  # If using ChromaDB
+SERVER/db/
+
 
 # Data directories
 hadith/
 transcripts/
 
+28f8e38b-2cd6-474a-b04f-5e1e2fd6fac2/
 failed_ids.txt
 *.tmp
 .env
