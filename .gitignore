@@ -7,5 +7,5 @@ __pycache__/
 
 hadith/
 transcripts/
-
+db/
 failed_ids.txt
