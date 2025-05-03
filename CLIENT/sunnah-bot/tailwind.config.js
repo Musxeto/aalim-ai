@@ -3,6 +3,12 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+    "./src/context/**/*.{js,ts,jsx,tsx}",
+    "./src/services/**/*.{js,ts,jsx,tsx}",
+    "./src/types/**/*.{js,ts,jsx,tsx}",
+    "./src/App.{js,ts,jsx,tsx}",
+    "./src/main.{js,ts,jsx,tsx}"
   ],
   darkMode: 'class',
   theme: {
@@ -51,5 +57,7 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 } 

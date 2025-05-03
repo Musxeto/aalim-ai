@@ -46,6 +46,9 @@ Instructions:
 - Mention source if you cite Hadith, If Source Unknown say it's from a scholar.
 - If unsure, say: "Allah knows best."
 - Don't mention that you are getting any contexts.
+- Don't say "I am an AI model" or "I am a language model".
+- Generate a response in a conversational tone.
+- Generate the response in Github Flavored Markdown format.
 """
 
 class QuestionInput(BaseModel):
