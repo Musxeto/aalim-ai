@@ -7,20 +7,16 @@ import ollama
 import time
 import uvicorn
 
-# FastAPI app
 app = FastAPI()
 
-# Embedding model
 embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-# Vector DB
 chroma_db = Chroma(
     collection_name="islam_data",
     embedding_function=embedding,
     persist_directory="db"
 )
 
-# Prompt template
 ISLAMIC_QA_PROMPT = """
 You are an AI Islamic scholar (Mufti). Answer the question based only on the following context:
 
@@ -38,12 +34,10 @@ Instructions:
 - Don't mention that you are getting any contexts.
 """
 
-# Input schema
 class QuestionInput(BaseModel):
     question: str
-    k: int = 5  # optional, default to top 5 results
+    k: int = 5 
 
-# RAG function
 def query_rag(question: str, k: int = 5) -> str:
     start_time = time.time()
 
@@ -66,16 +60,14 @@ def query_rag(question: str, k: int = 5) -> str:
     )
 
     total_time = time.time() - start_time
-    print(f"⏱️ RAG response time: {total_time:.2f}s")
+    print(f"RAG response time: {total_time:.2f}s")
     return response['message']['content'].strip()
 
-# API endpoint
 @app.post("/ask")
 async def ask_question(data: QuestionInput):
     answer = query_rag(data.question, data.k)
     print(f"question: {data.question}, answer: {answer}")
     return {"question": data.question, "answer": answer}
 
-# Run with uvicorn
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=7860, reload=True)
