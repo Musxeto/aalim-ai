@@ -52,3 +52,5 @@ SERVER/db/*
 SERVER/db/**/*.bin
 SERVER/db/*.sqlite3
 SERVER/db/**/*.bin
+SERVER/db/*.sqlite3
+SERVER/db/**/*.bin
