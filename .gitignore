@@ -6,6 +6,6 @@ __pycache__/
 *.pyd
 
 hadith/
-transcipts/
+transcripts/
 
 failed_ids.txt
