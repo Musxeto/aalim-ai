@@ -1,10 +1,19 @@
+# Python
 venv/
-node_modules/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*.egg-info/
+
+# Node
+node_modules/
+
+# Database
+db/
+chroma_db/  # If using ChromaDB
+
+# Data directories
 hadith/
 transcripts/
-db/
+
 failed_ids.txt
+*.tmp
