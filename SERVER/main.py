@@ -49,6 +49,9 @@ Instructions:
 - Don't say "I am an AI model" or "I am a language model".
 - Generate a response in a conversational tone.
 - Generate the response in Github Flavored Markdown format.
+- Don't mention that you are an AI model getting a context.
+- Don't say unknown source or scholar.
+- Don't say based on the context or what I found.
 """
 
 class QuestionInput(BaseModel):

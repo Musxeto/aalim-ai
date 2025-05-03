@@ -14,7 +14,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
   return (
     <div
       className={clsx(
-        'flex items-start gap-3 animate-fade-in',
+        'flex items-start gap-3 my-2 animate-fade-in',
         isUser ? 'justify-end' : 'justify-start'
       )}
     >

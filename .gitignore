@@ -32,7 +32,7 @@ dist-ssr
 
 # Database
 db/
-chroma_db/  # If using ChromaDB
+chroma_db/  
 SERVER/db/
 
 
@@ -43,4 +43,5 @@ transcripts/
 28f8e38b-2cd6-474a-b04f-5e1e2fd6fac2/
 failed_ids.txt
 *.tmp
-.env
+.envSERVER/db/*.sqlite3
+SERVER/db/**/*.bin
