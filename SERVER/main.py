@@ -73,6 +73,7 @@ def query_rag(question: str, k: int = 5) -> str:
 @app.post("/ask")
 async def ask_question(data: QuestionInput):
     answer = query_rag(data.question, data.k)
+    print(f"question: {data.question}, answer: {answer}")
     return {"question": data.question, "answer": answer}
 
 # Run with uvicorn
