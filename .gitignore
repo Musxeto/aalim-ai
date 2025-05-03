@@ -30,13 +30,10 @@ dist-ssr
 *.sw?
 
 
-# Database
 db/
 chroma_db/  
 SERVER/db/
 
-
-# Data directories
 hadith/
 SERVER/transcripts/*.json
 
@@ -48,11 +45,4 @@ SERVER/db/*.sqlite3
 SERVER/db/**/*.bin
 SERVER/db/*.sqlite3
 SERVER/db/
-SERVER/db/*
-
-SERVER/db/*.sqlite3
-SERVER/db/*.bin
-
 SERVER/db/28f8e38b-2cd6-474a-b04f-5e1e2fd6fac2/
-RAG/db/*.bin
-RAG/db/*.sqlite3
