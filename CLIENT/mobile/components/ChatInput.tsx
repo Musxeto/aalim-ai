@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#F7F7F8', // ChatGPT-style light background
+    backgroundColor: '#F7F7F8', 
     borderTopWidth: 1,
     borderTopColor: '#D9D9E3',
     shadowColor: '#000',
@@ -95,12 +95,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   darkContainer: {
-    backgroundColor: '#343541', // ChatGPT dark theme
+    backgroundColor: '#202123', 
     borderTopColor: '#4E4F60',
   },
   input: {
     flex: 1,
-    backgroundColor: '#E4E4E7', // Light gray bubble
+    backgroundColor: '#E4E4E7', 
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -111,11 +111,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   darkInput: {
-    backgroundColor: '#40414F', // Slightly lighter than bg
+    backgroundColor: '#40414F', 
     color: '#F5F5F5',
   },
   sendButton: {
-    backgroundColor: '#10B981', // Retain green send button
+    backgroundColor: '#10B981', 
     width: 44,
     height: 44,
     borderRadius: 22,

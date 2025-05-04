@@ -26,13 +26,19 @@ export class ThemeProvider extends Component<ThemeProviderProps, ThemeProviderSt
   async componentDidMount() {
     try {
       const savedTheme = await AsyncStorage.getItem('theme');
-      if (savedTheme) {
-        this.setState({ isDarkMode: savedTheme === 'dark' });
+  
+      // 👇 Default to dark if no theme is saved
+      if (savedTheme === 'dark' || savedTheme === null) {
+        this.setState({ isDarkMode: true });
+      } else {
+        this.setState({ isDarkMode: false });
       }
     } catch (error) {
       console.error('Error loading theme:', error);
+      this.setState({ isDarkMode: true }); 
     }
   }
+  
 
   toggleTheme = async () => {
     try {

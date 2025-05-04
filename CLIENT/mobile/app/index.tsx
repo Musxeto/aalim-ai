@@ -89,7 +89,6 @@ export default class Home extends Component<object, HomeState> {
     const updatedMessages = [...this.state.messages, newMessage];
     this.setState({ messages: updatedMessages });
 
-    // Update chats
     const updatedChats = chats.map(chat => 
       chat.id === currentChatId
         ? { ...chat, messages: [...chat.messages, newMessage], updatedAt: new Date() }
@@ -100,7 +99,6 @@ export default class Home extends Component<object, HomeState> {
     await AsyncStorage.setItem('chats', JSON.stringify(updatedChats));
 
     try {
-      // Call the Islamic QA API
       const response = await chatApi.askQuestion({
         question: content,
         k: 5
@@ -126,7 +124,6 @@ export default class Home extends Component<object, HomeState> {
       await AsyncStorage.setItem('chats', JSON.stringify(finalChats));
     } catch (error: unknown) {
       console.error('Error getting response:', error);
-      // Handle error appropriately
       const errorMessage: Message = {
         id: Date.now().toString(),
         role: 'assistant',
@@ -283,7 +280,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   darkChatContainer: {
-    backgroundColor: '#111827',
+    backgroundColor: '#202123',
   },
   messagesWrapper: {
     flex: 1,

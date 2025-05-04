@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
+import { View, StyleSheet, Animated, Platform } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { Message } from '../types';
 import { ThemeContext } from '../context/ThemeContext';
@@ -102,19 +102,20 @@ export class ChatMessage extends React.Component<ChatMessageProps> {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 4,
-    paddingHorizontal: 16,
+    marginVertical: 6,
+    paddingHorizontal: 12,
     flexDirection: 'row',
   },
   messageBubble: {
-    maxWidth: '80%',
-    padding: 12,
-    borderRadius: 16,
-    elevation: 1,
+    maxWidth: '85%',
+    padding: 14,
+    paddingVertical: 1,
+    borderRadius: 18,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
   },
   userBubble: {
     alignSelf: 'flex-end',
@@ -127,10 +128,10 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
   },
   darkUserBubble: {
-    backgroundColor: '#059669',
+    backgroundColor: '#059669', 
   },
   darkBotBubble: {
-    backgroundColor: '#1F2937',
+    backgroundColor: '#374151', 
   },
   user: {
     justifyContent: 'flex-end',
@@ -138,4 +139,6 @@ const styles = StyleSheet.create({
   bot: {
     justifyContent: 'flex-start',
   },
-}); 
+  
+});
+ 
