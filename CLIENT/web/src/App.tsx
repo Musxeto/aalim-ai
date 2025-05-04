@@ -27,6 +27,16 @@ Feel free to ask any questions about Islam, and I'll do my best to provide accur
   timestamp: new Date()
 };
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return isMobile;
+}
+
 function App() {
   const [chats, setChats] = useState<Chat[]>(() => {
     const savedChats = localStorage.getItem('chats');
@@ -35,7 +45,8 @@ function App() {
 
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     localStorage.setItem('chats', JSON.stringify(chats));
@@ -132,16 +143,32 @@ function App() {
   return (
     <ThemeProvider>
       <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
-        <Sidebar
-          chats={chats}
-          activeChatId={activeChatId}
-          onChatSelect={setActiveChatId}
-          onNewChat={handleNewChat}
-          isOpen={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <Sidebar
+            chats={chats}
+            activeChatId={activeChatId}
+            onChatSelect={setActiveChatId}
+            onNewChat={handleNewChat}
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+            variant="desktop"
+          />
+        )}
+        {/* Mobile Sidebar */}
+        {isMobile && (
+          <Sidebar
+            chats={chats}
+            activeChatId={activeChatId}
+            onChatSelect={setActiveChatId}
+            onNewChat={handleNewChat}
+            isOpen={isSidebarOpen}
+            onToggle={() => setIsSidebarOpen(false)}
+            variant="mobile"
+          />
+        )}
         <div className="flex-1 flex flex-col min-h-0">
-          <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
+          <Header onMenuClick={() => setIsSidebarOpen(true)} isMobile={isMobile} />
           <main className="flex-1 relative min-h-0">
             {activeChat && (
               <ChatContainer
