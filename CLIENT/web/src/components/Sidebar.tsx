@@ -1,4 +1,4 @@
-import { FiMessageSquare, FiPlus, FiMoon, FiSun, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
+import { FiPlus, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { Chat } from '../types';
 import { clsx } from 'clsx';
