@@ -50,7 +50,7 @@ export default class Home extends Component<object, HomeState> {
             id: Date.now().toString(),
             timestamp: new Date(),
             role: 'assistant',
-            content: 'Assalamu alaikum! I am your Sunnah Bot. How can I help you today?'
+            content: 'Assalamu alaikum! I am your Aalim AI. How can I help you today?'
           }],
           title: 'Chat',
           createdAt: new Date(),
@@ -153,7 +153,7 @@ export default class Home extends Component<object, HomeState> {
         role: 'assistant',
         content:`# Assalamu Alaikum! 👋
 
-Welcome to Sunnah Bot, your AI companion for Islamic knowledge and guidance. I'm here to help you with:
+Welcome to Aalim AI, your AI companion for Islamic knowledge and guidance. I'm here to help you with:
 
 * 📚 Quranic interpretations and tafsir
 * 🕌 Islamic history and traditions

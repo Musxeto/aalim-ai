@@ -22,7 +22,7 @@ export function Header({ onMenuClick, isMobile }: HeaderProps) {
             )}
             <FaMosque className="w-6 h-6 text-primary" />
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Sunnah Bot
+              Aalim AI
             </h1>
           </div>
         </div>

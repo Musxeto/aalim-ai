@@ -118,7 +118,7 @@ export class Sidebar extends Component<SidebarProps, SidebarState> {
                 fontWeight: '600',
                 color: isDarkMode ? '#FFFFFF' : '#111827',
                 marginLeft: 12,
-              }}>Sunnah Bot</Text>
+              }}>Aalim AI</Text>
             </View>
             <TouchableOpacity
               style={{

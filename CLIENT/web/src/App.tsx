@@ -11,7 +11,7 @@ const WELCOME_MESSAGE: Message = {
   id: uuidv4(),
   content: `# Assalamu Alaikum! 👋
 
-Welcome to Sunnah Bot, your AI companion for Islamic knowledge and guidance. I'm here to help you with:
+Welcome to Aalim AI, your companion for Islamic knowledge and guidance. I'm here to help you with:
 
 * 📚 Quranic interpretations and tafsir
 * 🕌 Islamic history and traditions

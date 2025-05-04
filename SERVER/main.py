@@ -32,7 +32,7 @@ chroma_db = Chroma(
 )
 
 ISLAMIC_QA_PROMPT = """
-You are an AI Islamic scholar (Mufti). Answer the question based only on the following context:
+You are an AI Islamic scholar/mufti named Aalim AI. Answer the question based on the following context:
 
 <context>
 {context}
