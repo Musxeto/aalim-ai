@@ -145,13 +145,13 @@ function App() {
       <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
         {/* Desktop Sidebar */}
         {!isMobile && (
-          <Sidebar
-            chats={chats}
-            activeChatId={activeChatId}
-            onChatSelect={setActiveChatId}
-            onNewChat={handleNewChat}
-            isOpen={isSidebarOpen}
-            onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+        <Sidebar
+          chats={chats}
+          activeChatId={activeChatId}
+          onChatSelect={setActiveChatId}
+          onNewChat={handleNewChat}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
             variant="desktop"
           />
         )}
@@ -165,7 +165,7 @@ function App() {
             isOpen={isSidebarOpen}
             onToggle={() => setIsSidebarOpen(false)}
             variant="mobile"
-          />
+        />
         )}
         <div className="flex-1 flex flex-col min-h-0">
           <Header onMenuClick={() => setIsSidebarOpen(true)} isMobile={isMobile} />

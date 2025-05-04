@@ -2,6 +2,7 @@ import { FiPlus, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { Chat } from '../types';
 import { clsx } from 'clsx';
+import { FaMosque } from 'react-icons/fa';
 
 interface SidebarProps {
   chats: Chat[];
@@ -82,36 +83,44 @@ export function Sidebar({ chats, activeChatId, onChatSelect, onNewChat, isOpen, 
       </>
     );
   }
-
   // Desktop sidebar (collapsible)
-  return (
-    <div
-      className={clsx(
-        'h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col',
-        isOpen ? 'w-64' : 'w-16',
-        'hidden md:flex'
-      )}
-    >
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <button
-          onClick={onNewChat}
-          className={clsx(
-            'flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-3 py-2 transition-colors',
-            !isOpen && 'justify-center'
-          )}
-        >
-          <FiPlus className="w-5 h-5" />
-          {isOpen && <span>New Chat</span>}
-        </button>
+return (
+  <div
+    className={clsx(
+      'h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 flex flex-col',
+      isOpen ? 'w-64' : 'w-16',
+      'hidden md:flex'
+    )}
+  >
+    <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+      {isOpen ? (
+        <>
+          <button
+            onClick={onNewChat}
+            className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-3 py-2 transition-colors"
+          >
+            <FiPlus className="w-5 h-5" />
+            <span>New Chat</span>
+          </button>
+          <button
+            onClick={onToggle}
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors"
+          >
+            <FiChevronLeft className="w-5 h-5" />
+          </button>
+        </>
+      ) : (
         <button
           onClick={onToggle}
           className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors"
         >
-          {isOpen ? <FiChevronLeft className="w-5 h-5" /> : <FiChevronRight className="w-5 h-5" />}
+          <FiChevronRight className="w-5 h-5" />
         </button>
-      </div>
-      <div className="flex-1 overflow-y-auto p-2">
-        {isOpen && (
+      )}
+    </div>
+    <div className="flex-1 overflow-y-auto p-2">
+      {isOpen ? (
+        <>
           <div className="space-y-1">
             {chats.map((chat) => (
               <button
@@ -128,20 +137,31 @@ export function Sidebar({ chats, activeChatId, onChatSelect, onNewChat, isOpen, 
               </button>
             ))}
           </div>
-        )}
-      </div>
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <button
-          onClick={toggleTheme}
-          className={clsx(
-            'flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-3 py-2 transition-colors w-full',
-            !isOpen && 'justify-center'
-          )}
-        >
-          {theme === 'dark' ? '🌙' : '☀️'}
-          {isOpen && <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
-        </button>
-      </div>
+        </>
+      ) : (
+        <div className="flex flex-col items-center space-y-4">
+          <button
+            onClick={onNewChat}
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors"
+            title="New Chat"
+          >
+            <FiPlus className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
-  );
+    <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+      <button
+        onClick={toggleTheme}
+        className={clsx(
+          'flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-3 py-2 transition-colors w-full',
+          !isOpen && 'justify-center'
+        )}
+      >
+        {theme === 'dark' ? '🌙' : '☀️'}
+        {isOpen && <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
+      </button>
+    </div>
+  </div>
+);
 } 
