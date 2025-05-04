@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { View, TextInput, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, TextInput, TouchableOpacity, StyleSheet,} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemeContext } from '../context/ThemeContext';
 
@@ -9,91 +9,128 @@ interface ChatInputProps {
 
 interface ChatInputState {
   message: string;
-  isDarkMode: boolean;
 }
 
-export class ChatInput extends Component<ChatInputProps, ChatInputState> {
+export class ChatInput extends React.Component<ChatInputProps, ChatInputState> {
   static contextType = ThemeContext;
+  private inputRef = React.createRef<TextInput>();
 
   constructor(props: ChatInputProps) {
     super(props);
     this.state = {
       message: '',
-      isDarkMode: false,
     };
   }
 
-  componentDidMount() {
-    this.setState({ isDarkMode: this.context.isDarkMode });
-  }
-
-  componentDidUpdate(prevProps: ChatInputProps, prevState: ChatInputState) {
-    if (this.context.isDarkMode !== prevState.isDarkMode) {
-      this.setState({ isDarkMode: this.context.isDarkMode });
-    }
-  }
-
   handleSend = () => {
-    const { message } = this.state;
-    if (message.trim()) {
-      this.props.onSend(message);
+    if (this.state.message.trim()) {
+      this.props.onSend(this.state.message);
       this.setState({ message: '' });
+      this.inputRef.current?.focus();
+    }
+  };
+
+  handleKeyPress = (e: any) => {
+    if (e.nativeEvent.key === 'Enter' && !e.nativeEvent.shiftKey) {
+      e.preventDefault();
+      this.handleSend();
     }
   };
 
   render() {
-    const { message, isDarkMode } = this.state;
+    const isDarkMode = (this.context as any).isDarkMode;
 
     return (
-      <View style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        backgroundColor: isDarkMode ? '#1A1A1A' : '#FFFFFF',
-        borderTopWidth: 1,
-        borderTopColor: isDarkMode ? '#2D3748' : '#E2E8F0',
-      }}>
+      <View style={[
+        styles.container,
+        isDarkMode && styles.darkContainer
+      ]}>
         <TextInput
-          style={{
-            flex: 1,
-            backgroundColor: isDarkMode ? '#2D3748' : '#F9FAFB',
-            borderRadius: 24,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            marginRight: 12,
-            fontSize: 16,
-            maxHeight: 120,
-            color: isDarkMode ? '#FFFFFF' : '#000000',
-            borderWidth: 1,
-            borderColor: isDarkMode ? '#4A5568' : '#E2E8F0',
-          }}
-          value={message}
+          ref={this.inputRef}
+          style={[
+            styles.input,
+            isDarkMode && styles.darkInput
+          ]}
+          value={this.state.message}
           onChangeText={(text) => this.setState({ message: text })}
-          placeholder="Type a message..."
-          placeholderTextColor={isDarkMode ? '#A0AEC0' : '#6B7280'}
+          placeholder="Type your message..."
+          placeholderTextColor={isDarkMode ? '#9CA3AF' : '#6B7280'}
           multiline
-          maxLength={4000}
-          onSubmitEditing={this.handleSend}
+          maxLength={1000}
+          onKeyPress={this.handleKeyPress}
         />
         <TouchableOpacity
-          style={{
-            padding: 12,
-            borderRadius: 24,
-            backgroundColor: '#F9FAFB',
-            borderWidth: 1,
-            borderColor: '#E2E8F0',
-            opacity: message.trim() ? 1 : 0.5,
-          }}
+          style={[
+            styles.sendButton,
+            isDarkMode && styles.darkSendButton,
+            !this.state.message.trim() && styles.disabledButton
+          ]}
           onPress={this.handleSend}
-          disabled={!message.trim()}
+          disabled={!this.state.message.trim()}
         >
           <Ionicons
             name="send"
-            size={24}
-            color={message.trim() ? '#10B981' : '#A0AEC0'}
+            size={20}
+            color={isDarkMode ? '#FFFFFF' : '#FFFFFF'}
           />
         </TouchableOpacity>
       </View>
     );
   }
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#F7F7F8', // ChatGPT-style light background
+    borderTopWidth: 1,
+    borderTopColor: '#D9D9E3',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  darkContainer: {
+    backgroundColor: '#343541', // ChatGPT dark theme
+    borderTopColor: '#4E4F60',
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#E4E4E7', // Light gray bubble
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 10,
+    maxHeight: 120,
+    color: '#0F0F0F',
+    fontSize: 16,
+    lineHeight: 20,
+  },
+  darkInput: {
+    backgroundColor: '#40414F', // Slightly lighter than bg
+    color: '#F5F5F5',
+  },
+  sendButton: {
+    backgroundColor: '#10B981', // Retain green send button
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  darkSendButton: {
+    backgroundColor: '#10B981', 
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+});

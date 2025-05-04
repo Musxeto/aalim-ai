@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Sidebar } from '../components/Sidebar';
 import { ChatMessage } from '../components/ChatMessage';
@@ -7,6 +7,7 @@ import { ChatInput } from '../components/ChatInput';
 import { Message, Chat } from '../types';
 import { ThemeContext } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { chatApi } from '../api/chat';
 
 interface HomeState {
   messages: Message[];
@@ -16,10 +17,10 @@ interface HomeState {
   isSidebarCollapsed: boolean;
 }
 
-export default class Home extends Component<{}, HomeState> {
+export default class Home extends Component<object, HomeState> {
   static contextType = ThemeContext;
 
-  constructor(props: {}) {
+  constructor(props: object) {
     super(props);
     this.state = {
       messages: [],
@@ -47,9 +48,11 @@ export default class Home extends Component<{}, HomeState> {
           id: Date.now().toString(),
           messages: [{
             id: Date.now().toString(),
+            timestamp: new Date(),
             role: 'assistant',
             content: 'Assalamu alaikum! I am your Sunnah Bot. How can I help you today?'
           }],
+          title: 'Chat',
           createdAt: new Date(),
           updatedAt: new Date()
         };
@@ -66,7 +69,7 @@ export default class Home extends Component<{}, HomeState> {
     }
   }
 
-  componentDidUpdate(prevProps: {}, prevState: HomeState) {
+  componentDidUpdate(prevProps: object, prevState: HomeState) {
     if (this.context.isDarkMode !== prevState.isDarkMode) {
       this.setState({ isDarkMode: this.context.isDarkMode });
     }
@@ -96,12 +99,17 @@ export default class Home extends Component<{}, HomeState> {
     this.setState({ chats: updatedChats });
     await AsyncStorage.setItem('chats', JSON.stringify(updatedChats));
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      // Call the Islamic QA API
+      const response = await chatApi.askQuestion({
+        question: content,
+        k: 5
+      });
+
       const botResponse: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: 'This is a placeholder response. The actual API integration will be implemented later.',
+        content: response.answer,
         timestamp: new Date()
       };
 
@@ -115,8 +123,29 @@ export default class Home extends Component<{}, HomeState> {
       );
 
       this.setState({ chats: finalChats });
-      AsyncStorage.setItem('chats', JSON.stringify(finalChats));
-    }, 1000);
+      await AsyncStorage.setItem('chats', JSON.stringify(finalChats));
+    } catch (error: unknown) {
+      console.error('Error getting response:', error);
+      // Handle error appropriately
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'Sorry, I encountered an error while processing your question. Please try again.',
+        timestamp: new Date()
+      };
+
+      const finalMessages = [...updatedMessages, errorMessage];
+      this.setState({ messages: finalMessages });
+
+      const finalChats = updatedChats.map(chat =>
+        chat.id === currentChatId
+          ? { ...chat, messages: [...chat.messages, errorMessage], updatedAt: new Date() }
+          : chat
+      );
+
+      this.setState({ chats: finalChats });
+      await AsyncStorage.setItem('chats', JSON.stringify(finalChats));
+    }
   };
 
   handleNewChat = async () => {
@@ -125,11 +154,25 @@ export default class Home extends Component<{}, HomeState> {
       messages: [{
         id: Date.now().toString(),
         role: 'assistant',
-        content: 'Assalamu alaikum! I am your Sunnah Bot. How can I help you today?',
-        timestamp: new Date()
+        content:`# Assalamu Alaikum! 👋
+
+Welcome to Sunnah Bot, your AI companion for Islamic knowledge and guidance. I'm here to help you with:
+
+* 📚 Quranic interpretations and tafsir
+* 🕌 Islamic history and traditions
+* 🤲 Daily prayers and supplications
+* 📖 Hadith explanations and authenticity
+* 🎓 Islamic jurisprudence (Fiqh)
+* 💫 Spiritual guidance and personal development
+
+Feel free to ask any questions about Islam, and I'll do my best to provide accurate and helpful answers based on authentic sources.
+
+*Note: While I aim to provide accurate information, please verify important matters with qualified scholars.*`,
+      timestamp: new Date()
       }],
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      title: Date.now().toString(),
     };
 
     const updatedChats = [...this.state.chats, newChat];
@@ -168,6 +211,11 @@ export default class Home extends Component<{}, HomeState> {
         styles.container,
         isDarkMode && styles.darkContainer
       ]}>
+        <StatusBar
+          barStyle={isDarkMode ? "light-content" : "dark-content"}
+          backgroundColor={isDarkMode ? "#1A1A1A" : "#FFFFFF"}
+        />
+        
         <Sidebar
           chats={chats}
           currentChatId={currentChatId}
@@ -176,35 +224,39 @@ export default class Home extends Component<{}, HomeState> {
           isCollapsed={isSidebarCollapsed}
           onToggleSidebar={this.toggleSidebar}
         />
-        
-        <View style={[
-          styles.chatContainer,
-          isDarkMode && styles.darkChatContainer
-        ]}>
-          <View style={styles.messagesWrapper}>
-            {isSidebarCollapsed && (
-              <TouchableOpacity
-                style={[
-                  styles.expandButton,
-                  isDarkMode && styles.darkExpandButton
-                ]}
-                onPress={this.toggleSidebar}
-                activeOpacity={0.7}
+
+        {isSidebarCollapsed && (
+          <TouchableOpacity
+            style={[
+              styles.expandButton,
+              isDarkMode && styles.darkExpandButton
+            ]}
+            onPress={this.toggleSidebar}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="menu" size={24} color="#10B981" />
+          </TouchableOpacity>
+        )}
+
+        <View style={styles.mainContainer}>
+          <View style={[
+            styles.chatContainer,
+            isDarkMode && styles.darkChatContainer
+          ]}>
+            <View style={styles.messagesWrapper}>
+              <ScrollView
+                style={styles.messagesContainer}
+                contentContainerStyle={styles.messagesContent}
+                showsVerticalScrollIndicator={false}
               >
-                <Ionicons name="menu" size={24} color="#10B981" />
-              </TouchableOpacity>
-            )}
-            <ScrollView
-              style={styles.messagesContainer}
-              contentContainerStyle={styles.messagesContent}
-            >
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-            </ScrollView>
+                {messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} />
+                ))}
+              </ScrollView>
+            </View>
+            
+            <ChatInput onSend={this.handleSend} />
           </View>
-          
-          <ChatInput onSend={this.handleSend} />
         </View>
       </View>
     );
@@ -215,46 +267,55 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F9FAFB',
   },
   darkContainer: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#111827',
+  },
+  mainContainer: {
+    flex: 1,
+    position: 'relative',
+    width: '100%',
   },
   chatContainer: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F9FAFB',
+    width: '100%',
   },
   darkChatContainer: {
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#111827',
   },
   messagesWrapper: {
     flex: 1,
-    marginTop: 80,
+    marginTop: Platform.OS === 'ios' ? 90 : 80,
+    width: '100%',
   },
   messagesContainer: {
     flex: 1,
+    width: '100%',
   },
   messagesContent: {
-    padding: 16,
+    paddingBottom: 24,
+    width: '100%',
   },
   expandButton: {
     position: 'absolute',
     left: 16,
-    top: 16,
+    top: Platform.OS === 'ios' ? 55 : 35,
     padding: 12,
     borderRadius: 24,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FFFFFF',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    zIndex: 999,
+    borderColor: '#E5E7EB',
+    zIndex: 9999,
   },
   darkExpandButton: {
-    backgroundColor: '#2D3748',
-    borderColor: '#4A5568',
+    backgroundColor: '#1F2937',
+    borderColor: '#374151',
   },
 }); 

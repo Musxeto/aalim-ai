@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { Chat } from '../types';
 import { ThemeContext } from '../context/ThemeContext';
@@ -91,7 +91,7 @@ export class Sidebar extends Component<SidebarProps, SidebarState> {
             transform: [{ translateX }],
             zIndex: 2,
             backgroundColor: isDarkMode ? '#202123' : '#FFFFFF',
-            marginTop: 40,
+            marginTop: 30,
             shadowColor: '#000',
             shadowOffset: { width: 2, height: 0 },
             shadowOpacity: 0.25,

@@ -1,27 +1,28 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { ThemeProvider } from '../context/ThemeContext';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { ThemeProvider, ThemeContext } from '../context/ThemeContext';
+import { SafeAreaView } from 'react-native';
+
+function AppLayout() {
+  const { isDarkMode } = useContext(ThemeContext);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDarkMode ? '#343541' : '#F7F7F8' }}>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
+    </SafeAreaView>
+  );
+}
 
 export default function Layout() {
   return (
     <ThemeProvider>
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        />
-      </SafeAreaView>
+      <AppLayout />
     </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-});
