@@ -7,7 +7,7 @@ import { ChatInput } from '../components/ChatInput';
 import { Message, Chat } from '../types';
 import { ThemeContext } from '../context/ThemeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { chatApi } from '../api/chat';
+import { chatApi } from '@/api';
 
 interface HomeState {
   messages: Message[];
