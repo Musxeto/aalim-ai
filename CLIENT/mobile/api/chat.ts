@@ -1,10 +1,6 @@
-import { apiClient } from './client';
-import { ENDPOINTS } from './config';
-import { Message, Chat } from '../types';
-
-export interface AskQuestionRequest {
+export interface AskQuestionPayload {
   question: string;
-  k?: number;
+  k: number;
 }
 
 export interface AskQuestionResponse {
@@ -12,29 +8,23 @@ export interface AskQuestionResponse {
   answer: string;
 }
 
-export interface GetHistoryResponse {
-  chats: Chat[];
-}
+const API_URL = 'http://192.168.165.109:7860'; 
 
-export interface NewChatResponse {
-  chat: Chat;
-}
+export const chatApi = {
+  askQuestion: async (payload: AskQuestionPayload): Promise<AskQuestionResponse> => {
+    const res = await fetch(`${API_URL}/ask`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
 
-class ChatApi {
-  // Ask a question to the Islamic QA system
-  async askQuestion(data: AskQuestionRequest): Promise<AskQuestionResponse> {
-    return apiClient.post<AskQuestionResponse>(ENDPOINTS.CHAT.SEND_MESSAGE, data);
-  }
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status} ${res.statusText}`);
+    }
 
-  // Get chat history
-  async getHistory(): Promise<GetHistoryResponse> {
-    return apiClient.get<GetHistoryResponse>(ENDPOINTS.CHAT.GET_HISTORY);
-  }
-
-  // Create a new chat
-  async newChat(): Promise<NewChatResponse> {
-    return apiClient.post<NewChatResponse>(ENDPOINTS.CHAT.NEW_CHAT);
-  }
-}
-
-export const chatApi = new ChatApi(); 
+    const data: AskQuestionResponse = await res.json();
+    return data;
+  },
+};

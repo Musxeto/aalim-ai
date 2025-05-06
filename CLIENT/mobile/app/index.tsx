@@ -19,7 +19,7 @@ interface HomeState {
 
 export default class Home extends Component<object, HomeState> {
   static contextType = ThemeContext;
-
+  private scrollViewRef = React.createRef<ScrollView>();
   constructor(props: object) {
     super(props);
     this.state = {
@@ -85,7 +85,6 @@ export default class Home extends Component<object, HomeState> {
       content,
       timestamp: new Date()
     };
-
     const updatedMessages = [...this.state.messages, newMessage];
     this.setState({ messages: updatedMessages });
 
@@ -242,9 +241,11 @@ Feel free to ask any questions about Islam, and I'll do my best to provide accur
           ]}>
             <View style={styles.messagesWrapper}>
               <ScrollView
+                ref={this.scrollViewRef}
                 style={styles.messagesContainer}
                 contentContainerStyle={styles.messagesContent}
                 showsVerticalScrollIndicator={false}
+                onContentSizeChange={() => this.scrollViewRef.current?.scrollToEnd({ animated: true })}
               >
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />

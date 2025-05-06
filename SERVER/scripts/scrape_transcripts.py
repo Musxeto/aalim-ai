@@ -7,7 +7,7 @@ from yt_dlp import YoutubeDL
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-CHANNEL_URL = "https://www.youtube.com/@assimalhakeem"
+CHANNEL_URL = "https://www.youtube.com/@Justalayman"
 OUTPUT_FOLDER = "transcripts"
 FAILED_LOG = "failed_ids.txt"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
