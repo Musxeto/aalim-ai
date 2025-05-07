@@ -74,7 +74,6 @@ def verify_firebase_token(token: str):
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid Firebase token")
 
-# Context Fetcher
 def get_user_context(uid: str, chat_id: str, limit: int = 5):
     messages_ref = db.collection("users").document(uid).collection("chats").document(chat_id).collection("messages")
     query = messages_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(limit)
@@ -90,7 +89,6 @@ def get_user_context(uid: str, chat_id: str, limit: int = 5):
     
     return "\n\n".join(context_messages)
 
-# Message Storer
 def store_message(uid: str, chat_id: str, role: str, text: str):
     messages_ref = (
         db.collection("users")
@@ -102,10 +100,8 @@ def store_message(uid: str, chat_id: str, role: str, text: str):
     messages_ref.add({
         "role": role,
         "text": text,
-        "timestamp": firestore.SERVER_TIMESTAMP  # <-- Stores exact time from server
+        "timestamp": firestore.SERVER_TIMESTAMP 
     })
-
-
 
 def query_rag(question: str, k: int, prior_context: str) -> str:
     docs = chroma_db.similarity_search(question, k=k)
@@ -153,7 +149,6 @@ async def ask_question(data: QuestionInput):
     uid = None
     user_context = ""
 
-    # If user is authenticated, verify and fetch chat context
     if data.token:
         try:
             uid = verify_firebase_token(data.token)
@@ -164,9 +159,8 @@ async def ask_question(data: QuestionInput):
 
     answer = query_rag(data.question, data.k, user_context)
 
-    if uid and data.chat_id:
-        store_message(uid, data.chat_id, "user", data.question)
-        store_message(uid, data.chat_id, "assistant", answer)
+    store_message(uid, data.chat_id, "user", data.question)
+    store_message(uid, data.chat_id, "assistant", answer)
 
     return {"question": data.question, "answer": answer}
 
