@@ -88,3 +88,4 @@ yarn-error.*
 app-example
 .env
 service.json
+serviceAccountKey.json

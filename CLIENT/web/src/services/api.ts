@@ -5,7 +5,11 @@ export interface QuestionResponse {
   answer: string;
 }
 
-export async function askQuestion(question: string): Promise<QuestionResponse> {
+export async function askQuestion(
+  question: string,
+  token: string,
+  chatId: string
+): Promise<QuestionResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/ask`, {
       method: 'POST',
@@ -14,7 +18,9 @@ export async function askQuestion(question: string): Promise<QuestionResponse> {
       },
       body: JSON.stringify({
         question,
-        k: 5
+        token,
+        chat_id: chatId,
+        k: 5,
       }),
     });
 
@@ -28,4 +34,5 @@ export async function askQuestion(question: string): Promise<QuestionResponse> {
     console.error('Error asking question:', error);
     throw error;
   }
-} 
+}
+

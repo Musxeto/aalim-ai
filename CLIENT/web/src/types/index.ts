@@ -10,3 +10,9 @@ export interface Chat {
   title: string;
   messages: Message[];
 } 
+
+export interface User {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+}
