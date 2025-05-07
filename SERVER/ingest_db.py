@@ -18,7 +18,7 @@ def load_dataset(filepath):
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # video_data = load_dataset(os.path.join(current_dir, "data", "combined_dataset_zakir.jsonl"))
 # hadith_data = load_dataset(os.path.join(current_dir, "data", "combined_hadith_dataset.jsonl"))
-tafsir_data = load_dataset(os.path.join(current_dir, "data", "combined_tafseer_dataset.jsonl"))
+tafsir_data = load_dataset(os.path.join(current_dir, "data", "tafseer_dataset.jsonl"))
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 
