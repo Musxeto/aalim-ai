@@ -16,26 +16,27 @@ def load_dataset(filepath):
     return data
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-video_data = load_dataset(os.path.join(current_dir, "data", "combined_dataset_zakir.jsonl"))
+# video_data = load_dataset(os.path.join(current_dir, "data", "combined_dataset_zakir.jsonl"))
 # hadith_data = load_dataset(os.path.join(current_dir, "data", "combined_hadith_dataset.jsonl"))
+tafsir_data = load_dataset(os.path.join(current_dir, "data", "combined_tafseer_dataset.jsonl"))
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
 
 docs, metadatas = [], []
 
-for item in video_data:
-    transcript = item.get("transcript", "")
-    if not transcript.strip():
-        continue 
-    splits = splitter.split_text(transcript)
-    for idx, split in enumerate(splits):
-        docs.append(split)
-        metadatas.append({
-            "source_type": "video",
-            "video_id": item.get("video_id"),
-            "title": item.get("title"),
-            "chunk_id": idx
-        })
+# for item in video_data:
+#     transcript = item.get("transcript", "")
+#     if not transcript.strip():
+#         continue 
+#     splits = splitter.split_text(transcript)
+#     for idx, split in enumerate(splits):
+#         docs.append(split)
+#         metadatas.append({
+#             "source_type": "video",
+#             "video_id": item.get("video_id"),
+#             "title": item.get("title"),
+#             "chunk_id": idx
+#         })
 
 # for item in hadith_data:
 #     transcript = item.get("transcript", "")
@@ -53,6 +54,19 @@ for item in video_data:
 #             "hadith_no": item.get("hadith_no"),
 #             "chunk_id": idx
 #         })
+
+for item in tafsir_data:
+    tafsir = item.get("text", "")
+    if not tafsir.strip():
+        continue
+    splits = splitter.split_text(tafsir)
+    for idx, split in enumerate(splits):
+        docs.append(split)
+        metadatas.append({
+            "source_type": "tafsir",
+            "tafsir_name": item.get("tafsir_name"),
+            "chunk_id": idx
+        })
 
 embedding = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 persist_dir = "db"
