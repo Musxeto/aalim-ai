@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -10,12 +10,18 @@ import requests
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+import firebase_admin
+from firebase_admin import credentials, auth, firestore
+import requests
+
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client()
 
 app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,48 +60,77 @@ Answer the following question accurately and concisely using authentic Islamic k
 - Do not say I didn't find anything in providing context,The provided texts etc.
 - Do not say you are an AI or model.
 """
+
 class QuestionInput(BaseModel):
     question: str
-    k: int = 5 
+    token: str
+    chat_id: str
+    k: int = 5
 
-def query_rag(question: str, k: int = 5) -> str:
-    start_time = time.time()
+def verify_firebase_token(token: str):
+    try:
+        decoded = auth.verify_id_token(token)
+        return decoded["uid"]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid Firebase token")
 
+# Context Fetcher
+def get_user_context(uid: str, chat_id: str, limit: int = 5):
+    messages_ref = db.collection("users").document(uid).collection("chats").document(chat_id).collection("messages")
+    query = messages_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(limit)
+    results = query.stream()
+
+    # Build context in chat format
+    context_messages = []
+    for doc in reversed(list(results)):
+        data = doc.to_dict()
+        role = data.get("role", "user")
+        text = data.get("text", "")
+        context_messages.append(f"**{role.capitalize()}**: {text}")
+    
+    return "\n\n".join(context_messages)
+
+# Message Storer
+def store_message(uid: str, chat_id: str, role: str, text: str):
+    messages_ref = (
+        db.collection("users")
+        .document(uid)
+        .collection("chats")
+        .document(chat_id)
+        .collection("messages")
+    )
+    messages_ref.add({
+        "role": role,
+        "text": text,
+        "timestamp": firestore.SERVER_TIMESTAMP  # <-- Stores exact time from server
+    })
+
+
+
+def query_rag(question: str, k: int, prior_context: str) -> str:
     docs = chroma_db.similarity_search(question, k=k)
 
-    context = "\n\n".join([
+    search_context = "\n\n".join([
         f"Source: {doc.metadata.get('source', 'unknown')}\nTitle: {doc.metadata.get('title')}\nContent: {doc.page_content.strip()}"
         for doc in docs
     ])
 
+    combined_context = f"{prior_context}\n\n{search_context}".strip()
+
     prompt = ChatPromptTemplate.from_template(ISLAMIC_QA_PROMPT).format(
-        context=context,
+        context=combined_context,
         question=question
     )
 
-    # Gemini API implementation
-    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")  # Make sure to set this environment variable
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     if not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY environment variable not set")
-    
+        raise ValueError("GEMINI_API_KEY not set")
+
     response = requests.post(
         f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}",
         headers={'Content-Type': 'application/json'},
-        json={
-            "contents": [{
-                "parts": [{"text": prompt}]
-            }]
-        }
+        json={"contents": [{"parts": [{"text": prompt}]}]}
     )
-    
-    if response.status_code != 200:
-        raise Exception(f"Gemini API request failed with status {response.status_code}: {response.text}")
-    
-    try:
-        gemini_response = response.json()
-        answer = gemini_response['candidates'][0]['content']['parts'][0]['text']
-    except (KeyError, IndexError) as e:
-        raise Exception(f"Failed to parse Gemini API response: {str(e)}")
 
     # Ollama implementation (commented out)
     # response = ollama.chat(
@@ -105,14 +140,34 @@ def query_rag(question: str, k: int = 5) -> str:
     # )
     # answer = response['message']['content'].strip()
 
-    total_time = time.time() - start_time
-    print(f"RAG response time: {total_time:.2f}s")
-    return answer
+    if response.status_code != 200:
+        raise Exception(f"Gemini API failed: {response.text}")
+
+    try:
+        return response.json()['candidates'][0]['content']['parts'][0]['text']
+    except (KeyError, IndexError):
+        raise Exception("Failed to parse Gemini response")
 
 @app.post("/ask")
 async def ask_question(data: QuestionInput):
-    answer = query_rag(data.question, data.k)
-    print(f"question: {data.question}, answer: {answer}")
+    uid = None
+    user_context = ""
+
+    # If user is authenticated, verify and fetch chat context
+    if data.token:
+        try:
+            uid = verify_firebase_token(data.token)
+            if data.chat_id:
+                user_context = get_user_context(uid, data.chat_id, limit=5)
+        except:
+            raise HTTPException(status_code=401, detail="Invalid Firebase token")
+
+    answer = query_rag(data.question, data.k, user_context)
+
+    if uid and data.chat_id:
+        store_message(uid, data.chat_id, "user", data.question)
+        store_message(uid, data.chat_id, "assistant", answer)
+
     return {"question": data.question, "answer": answer}
 
 if __name__ == "__main__":
