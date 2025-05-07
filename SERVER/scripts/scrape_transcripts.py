@@ -7,8 +7,8 @@ from yt_dlp import YoutubeDL
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-CHANNEL_URL = "https://www.youtube.com/@Justalayman"
-OUTPUT_FOLDER = "transcripts"
+CHANNEL_URL = "https://www.youtube.com/@Drzakirchannel"
+OUTPUT_FOLDER = "transcripts_zakir"
 FAILED_LOG = "failed_ids.txt"
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -80,7 +80,7 @@ def main():
         for f in tqdm(as_completed(futures), total=len(futures), desc="Fetching transcripts"):
             _ = f.result()
 
-    print("✅ All done!")
+    print(" All done!")
 
 if __name__ == "__main__":
     main()

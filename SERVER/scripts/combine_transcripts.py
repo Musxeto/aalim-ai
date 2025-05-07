@@ -1,7 +1,7 @@
 import os
 import json
 
-def combine_transcripts(folder="transcripts", output_file="combined_dataset.jsonl"):
+def combine_transcripts(folder="transcripts_zakir", output_file="combined_dataset_zakir.jsonl"):
     combined = []
     for file in os.listdir(folder):
         if file.endswith(".json"):
