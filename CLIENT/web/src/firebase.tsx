@@ -3,6 +3,7 @@ import {
   getAuth,
   signInWithEmailAndPassword,
   signOut,
+  createUserWithEmailAndPassword,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -10,6 +11,7 @@ import {
   getDocs,
   query,
   orderBy,
+  limit,
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -48,6 +50,16 @@ const getCurrentUser = () => {
   }
 };
 
+const signUp = async (email: string, password: string) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error("Error signing up:", error);
+    throw error;
+  }
+};
+
 const signIn = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -70,7 +82,7 @@ const getUserChats = async (uid: string) => {
 
 const getMessagesForChat = async (uid: string, chatId: string, limitCount = 50) => {
   const messagesRef = collection(db, "users", uid, "chats", chatId, "messages");
-  const q = query(messagesRef, orderBy("timestamp", "desc"));
+  const q = query(messagesRef, orderBy("timestamp", "desc"), limit(limitCount));
   const snapshot = await getDocs(q);
   const messages = snapshot.docs.map(doc => ({
     id: doc.id,
@@ -82,6 +94,7 @@ const getMessagesForChat = async (uid: string, chatId: string, limitCount = 50) 
 export {
   signIn,
   signOutUser,
+  signUp,
   getCurrentUser,
   getUserChats,
   getMessagesForChat,

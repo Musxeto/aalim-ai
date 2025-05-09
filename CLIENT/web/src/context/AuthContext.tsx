@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, signIn, signOutUser } from '../firebase';
+import { getCurrentUser, signIn, signOutUser,signUp } from '../firebase';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         setCurrentUser(null);
         setLoading(false);
+        console.error('Error fetching current user:', error);
       }
     };
 
@@ -45,6 +46,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signup = async (email: string, password: string) => {
+    try {
+      await signUp(email, password);
+      const user = getCurrentUser();
+      setCurrentUser(user);
+    } catch (error) {
+      throw error;
+    }
+  };
   const logout = async () => {
     try {
       await signOutUser();
@@ -55,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout,signup }}>
       {children}
     </AuthContext.Provider>
   );

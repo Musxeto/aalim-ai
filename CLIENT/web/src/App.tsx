@@ -6,6 +6,7 @@ import { Sidebar } from './components/Sidebar';
 import { ChatContainer } from './components/ChatContainer';
 import { Chat, Message } from './types';
 import { askQuestion } from './services/api';
+import { AuthProvider } from './context/AuthContext';
 
 const WELCOME_MESSAGE: Message = {
   id: uuidv4(),
@@ -141,6 +142,7 @@ function App() {
   const activeChat = chats.find(chat => chat.id === activeChatId);
 
   return (
+    <AuthProvider>
     <ThemeProvider>
       <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
         {/* Desktop Sidebar */}
@@ -181,6 +183,7 @@ function App() {
         </div>
       </div>
     </ThemeProvider>
+    </AuthProvider>
   );
 }
 
