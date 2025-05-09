@@ -42,17 +42,17 @@ You are an expert Islamic scholar named **Aalim AI**.
 
 Answer the following question accurately and concisely using authentic Islamic knowledge.
 
+Use the chat history and relevant Islamic knowledge to answer the user's latest question **as part of a flowing conversation**.
 
-**Chat History:**
+**Previous Conversation**:
 {chat_history}
 
-
-**Knowledge Documents:**
+**Relevant Knowledge**:
 <context>
 {context}
 </context>
 
-**Question**: {question}
+**Latest Question**: {question}
 
 **Rules**:
 - Be confident like a scholar while answering.
@@ -82,23 +82,21 @@ def verify_firebase_token(token: str):
 
 def get_user_context(uid: str, chat_id: str, limit: int = 5):
     messages_ref = db.collection("users").document(uid).collection("chats").document(chat_id).collection("messages")
-    query = messages_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(limit * 2)  # user + assistant
-
+    query = messages_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(limit * 2)
     results = list(query.stream())
-    results.reverse()  # oldest to newest
-
-    context_blocks = []
+    results.reverse() 
+    
+    context = []
     for doc in results:
         data = doc.to_dict()
         role = data.get("role", "user")
-        text = data.get("text", "")
+        content = data.get("text", "").strip()
         if role == "user":
-            context_blocks.append(f"User: {text}")
+            context.append(f"User: {content}")
         elif role == "assistant":
-            context_blocks.append(f"Assistant: {text}")
-
-    return "\n".join(context_blocks)
-
+            context.append(f"Assistant: {content}")
+    
+    return "\n".join(context[-limit*2:])  # Ensure exact count
 def store_message(uid: str, chat_id: str, role: str, text: str):
     messages_ref = (
         db.collection("users")
@@ -122,14 +120,15 @@ def query_rag(question: str, k: int, prior_context: str) -> str:
         for doc in docs
     ])
 
-    combined_context = f"{prior_context}\n\n{search_context}".strip()
-
+    combined_user_message = f"{prior_context}\n\nUser: {question}"
+    
     prompt = ChatPromptTemplate.from_template(ISLAMIC_QA_PROMPT).format(
         chat_history=prior_context,
         context=search_context,
-        question=question
+        question=combined_user_message
     )
-    print(f"Combined context: {combined_context}")
+
+    print(f"Combined context: {combined_user_message}")
 
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     if not GEMINI_API_KEY:
@@ -180,7 +179,7 @@ async def ask_question(data: QuestionInput):
     if uid and data.chat_id:
         store_message(uid, data.chat_id, "user", data.question)
         store_message(uid, data.chat_id, "assistant", answer)
-
+    
     return {"question": data.question, "answer": answer}
 
 if __name__ == "__main__":
