@@ -1,6 +1,8 @@
 import { LoginForm } from "./Auth/LoginForm";
 import { SignUpForm } from "./Auth/SignUpForm";
 import { useState } from "react";
+import { FaTimes } from "react-icons/fa";
+
 export function AuthModal({ onClose }: { onClose: () => void }) {
   const [authType, setAuthType] = useState<'login' | 'signup'>('login');
 
@@ -33,7 +35,7 @@ export function AuthModal({ onClose }: { onClose: () => void }) {
           onClick={onClose}
           className="absolute top-2 right-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2"
         >
-          ✕
+          <FaTimes className="w-5 h-5" />
         </button>
       </div>
     </div>

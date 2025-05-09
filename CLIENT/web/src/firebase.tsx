@@ -12,7 +12,9 @@ import {
   query,
   orderBy,
   limit,
+  addDoc,
 } from "firebase/firestore";
+import { Chat, Message } from './types'; // Ensure the Chat type is imported
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -38,16 +40,7 @@ const signOutUser = async () => {
 };
 
 const getCurrentUser = () => {
-  const user = auth.currentUser;
-  if (user) {
-    return {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-    };
-  } else {
-    return null;
-  }
+  return auth.currentUser;
 };
 
 const signUp = async (email: string, password: string) => {
@@ -73,22 +66,75 @@ const signIn = async (email: string, password: string) => {
 const getUserChats = async (uid: string) => {
   const chatsRef = collection(db, "users", uid, "chats");
   const snapshot = await getDocs(chatsRef);
-  const chats = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
+
+  const chats = await Promise.all(snapshot.docs.map(async doc => {
+    const messages = await getMessagesForChat(uid, doc.id);
+    return {
+      id: doc.id,
+      ...(doc.data() as Omit<Chat, 'id' | 'messages'>),
+      messages,
+    };
   }));
+
   return chats;
 };
 
 const getMessagesForChat = async (uid: string, chatId: string, limitCount = 50) => {
   const messagesRef = collection(db, "users", uid, "chats", chatId, "messages");
-  const q = query(messagesRef, orderBy("timestamp", "desc"), limit(limitCount));
+  const q = query(messagesRef, orderBy("timestamp", "asc"), limit(limitCount));
   const snapshot = await getDocs(q);
-  const messages = snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-  return messages.reverse(); 
+
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      timestamp: new Date(data.timestamp),
+    } as Message;
+  });
+};
+
+
+const createChat = async (uid: string, chatData: Omit<Chat, 'id'>): Promise<Chat> => {
+  try {
+    console.log(`Creating chat for user ${uid} with data:`, chatData);
+    
+    // Validate input
+    if (!uid) throw new Error("User ID is required");
+    if (!chatData) throw new Error("Chat data is required");
+    
+    const { messages, ...chatMeta } = chatData;
+
+    // Create chat document
+    const chatRef = await addDoc(collection(db, 'users', uid, 'chats'), {
+      ...chatMeta,
+      timestamp: new Date().toISOString(),
+    });
+
+    console.log(`Chat document created with ID: ${chatRef.id}`);
+
+    // Create messages subcollection
+    const messagesRef = collection(db, 'users', uid, 'chats', chatRef.id, 'messages');
+    const messagePromises = messages.map(async (message) => {
+      await addDoc(messagesRef, {
+        ...message,
+        timestamp: message.timestamp.toISOString()
+      });
+    });
+
+    await Promise.all(messagePromises);
+    console.log(`Added ${messages.length} messages to chat ${chatRef.id}`);
+
+    return {
+      id: chatRef.id,
+      ...chatMeta,
+      messages,
+    };
+    
+  } catch (error) {
+    console.error("Error in createChat:", error);
+    throw error; 
+  }
 };
 
 export {
@@ -98,4 +144,5 @@ export {
   getCurrentUser,
   getUserChats,
   getMessagesForChat,
+  createChat
 };

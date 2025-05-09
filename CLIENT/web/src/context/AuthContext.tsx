@@ -1,12 +1,14 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, signIn, signOutUser,signUp } from '../firebase';
-import { User } from '../types';
+import { getCurrentUser, signIn, signOutUser, signUp } from '../firebase';
+import { User } from 'firebase/auth';
+import {auth} from '../firebase';
 
 interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -14,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: async () => {},
   logout: async () => {},
+  signup: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -21,51 +24,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = () => {
-      try {
-        const user = getCurrentUser();
-        setCurrentUser(user);
-        setLoading(false);
-      } catch (error) {
-        setCurrentUser(null);
-        setLoading(false);
-        console.error('Error fetching current user:', error);
+    // Proper auth state listener
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setCurrentUser(user);
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('currentUser');
       }
-    };
+      setLoading(false);
+    });
 
-    return unsubscribe();
+    return unsubscribe; 
   }, []);
 
-  const login = async (email: string, password: string) => {
-    try {
-      await signIn(email, password);
-      const user = getCurrentUser();
-      setCurrentUser(user);
-    } catch (error) {
-      throw error;
-    }
+  const signup = async (email: string, password: string) => {
+    await signUp(email, password);
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
   };
 
-  const signup = async (email: string, password: string) => {
-    try {
-      await signUp(email, password);
-      const user = getCurrentUser();
-      setCurrentUser(user);
-    } catch (error) {
-      throw error;
-    }
+  const login = async (email: string, password: string) => {
+    await signIn(email, password);
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
   };
+
   const logout = async () => {
-    try {
-      await signOutUser();
-      setCurrentUser(null);
-    } catch (error) {
-      throw error;
-    }
+    await signOutUser();
+    setCurrentUser(null);
+    localStorage.removeItem('currentUser');
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, logout,signup }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout, signup }}>
       {children}
     </AuthContext.Provider>
   );

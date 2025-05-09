@@ -2,7 +2,6 @@ import { FiPlus, FiChevronLeft, FiChevronRight, FiX } from 'react-icons/fi';
 import { useTheme } from '../context/ThemeContext';
 import { Chat } from '../types';
 import { clsx } from 'clsx';
-import { FaMosque } from 'react-icons/fa';
 
 interface SidebarProps {
   chats: Chat[];

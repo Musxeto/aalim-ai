@@ -37,7 +37,7 @@ export function Header({ onMenuClick, isMobile }: HeaderProps) {
                 onClick={logout}
                 className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-4 py-2 transition-colors"
               >
-                Logout
+                {currentUser.email} Logout
               </button>
             ) : (
               <div className="flex gap-2">
@@ -45,7 +45,7 @@ export function Header({ onMenuClick, isMobile }: HeaderProps) {
                   onClick={() => setAuthModalOpen(true)}
                   className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-4 py-2 transition-colors"
                 >
-                  Login / Sign Up
+                  Login
                 </button>
               </div>
             )}

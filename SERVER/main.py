@@ -42,6 +42,12 @@ You are an expert Islamic scholar named **Aalim AI**.
 
 Answer the following question accurately and concisely using authentic Islamic knowledge.
 
+
+**Chat History:**
+{chat_history}
+
+
+**Knowledge Documents:**
 <context>
 {context}
 </context>
@@ -76,18 +82,22 @@ def verify_firebase_token(token: str):
 
 def get_user_context(uid: str, chat_id: str, limit: int = 5):
     messages_ref = db.collection("users").document(uid).collection("chats").document(chat_id).collection("messages")
-    query = messages_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(limit)
-    results = query.stream()
+    query = messages_ref.order_by("timestamp", direction=firestore.Query.DESCENDING).limit(limit * 2)  # user + assistant
 
-    # Build context in chat format
-    context_messages = []
-    for doc in reversed(list(results)):
+    results = list(query.stream())
+    results.reverse()  # oldest to newest
+
+    context_blocks = []
+    for doc in results:
         data = doc.to_dict()
         role = data.get("role", "user")
         text = data.get("text", "")
-        context_messages.append(f"**{role.capitalize()}**: {text}")
-    
-    return "\n\n".join(context_messages)
+        if role == "user":
+            context_blocks.append(f"User: {text}")
+        elif role == "assistant":
+            context_blocks.append(f"Assistant: {text}")
+
+    return "\n".join(context_blocks)
 
 def store_message(uid: str, chat_id: str, role: str, text: str):
     messages_ref = (
@@ -105,7 +115,8 @@ def store_message(uid: str, chat_id: str, role: str, text: str):
 
 def query_rag(question: str, k: int, prior_context: str) -> str:
     docs = chroma_db.similarity_search(question, k=k)
-
+    for i, doc in enumerate(docs):
+        print(f"Doc {i+1}: {doc.page_content[:300]}...")
     search_context = "\n\n".join([
         f"Source: {doc.metadata.get('source', 'unknown')}\nTitle: {doc.metadata.get('title')}\nContent: {doc.page_content.strip()}"
         for doc in docs
@@ -114,9 +125,11 @@ def query_rag(question: str, k: int, prior_context: str) -> str:
     combined_context = f"{prior_context}\n\n{search_context}".strip()
 
     prompt = ChatPromptTemplate.from_template(ISLAMIC_QA_PROMPT).format(
-        context=combined_context,
+        chat_history=prior_context,
+        context=search_context,
         question=question
     )
+    print(f"Combined context: {combined_context}")
 
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
     if not GEMINI_API_KEY:
@@ -154,13 +167,19 @@ async def ask_question(data: QuestionInput):
             uid = verify_firebase_token(data.token)
             if data.chat_id:
                 user_context = get_user_context(uid, data.chat_id, limit=5)
-        except:
-            raise HTTPException(status_code=401, detail="Invalid Firebase token")
+        except HTTPException as e:
+            if e.status_code == 401:
+                # Log the invalid token error and proceed as a guest user
+                print("Invalid Firebase token. Proceeding as guest user.")
+            else:
+                raise e
 
     answer = query_rag(data.question, data.k, user_context)
-
-    store_message(uid, data.chat_id, "user", data.question)
-    store_message(uid, data.chat_id, "assistant", answer)
+    print (f"User context: {user_context}")
+    print (f"Answer: {answer}")
+    if uid and data.chat_id:
+        store_message(uid, data.chat_id, "user", data.question)
+        store_message(uid, data.chat_id, "assistant", answer)
 
     return {"question": data.question, "answer": answer}
 
