@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { RequireAuth } from './RequireAuth';
 
 export function AppRoutes() {
-  const { loading } = useAuth();
+  const { currentUser, loading } = useAuth();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -17,8 +17,8 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<WelcomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/login" element={currentUser ? <Navigate to="/app" /> : <LoginPage />} />
+      <Route path="/signup" element={currentUser ? <Navigate to="/app" /> : <SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       
       <Route path="/app/*" element={
@@ -26,6 +26,7 @@ export function AppRoutes() {
           <App />
         </RequireAuth>
       } />
+
       <Route path="*" element={<Navigate to="/404" replace />} />
       <Route path="/404" element={<div>404 Not Found</div>} />
     </Routes>

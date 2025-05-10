@@ -1,56 +1,88 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaArrowLeft, FaEnvelope, FaEye, FaEyeSlash, FaLock, FaMosque, FaSpinner } from 'react-icons/fa';
 
 export function LoginPage() {
-  const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+    const { login, currentUser } = useAuth();
+    const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
-    setIsLoading(true);
-    try {
-      await login(email, password);
-    } catch (err) {
-      console.error('Login failed:', err);
-    } finally {
-      setIsLoading(false);
+    if (currentUser) {
+        navigate('/app');
     }
-  };
 
+    const handleLogin = async () => {
+        setIsLoading(true);
+        try {
+            await login(email, password);
+            navigate('/app');
+        } catch (err) {
+            console.error('Login failed:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    return (
+        <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 relative">
+            <button
+                onClick={() => navigate('/')}
+                className="absolute top-4 left-4 text-primary hover:underline flex items-center gap-2"
+            >
+                <FaArrowLeft /> Back
+            </button>
 
-  return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Login</h1>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-80 p-2 mb-4 border border-gray-300 rounded"
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-80 p-2 mb-4 border border-gray-300 rounded"
-      />
-      <button
-        onClick={handleLogin}
-        className="w-80 bg-primary text-white py-2 rounded mb-4 flex items-center justify-center"
-        disabled={isLoading}
-      >
-        {isLoading ? 'Loading...' : 'Login'}
-      </button>
-      <Link
-        to="/forgot-password"
-        className="text-sm text-primary hover:underline mt-4"
-      >
-        Forgot Password?
-      </Link>
-    </div>
-  );
+            <FaMosque className="w-12 h-12 text-primary mb-2" />
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Aalim AI</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">Login to your account</p>
+
+            <div className="relative w-80 mb-4">
+                <FaEnvelope className="absolute left-3 top-3 text-gray-500" />
+                <input
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full p-2 pl-10 border border-gray-300 rounded"
+                />
+            </div>
+
+            <div className="relative w-80 mb-4">
+                <FaLock className="absolute left-3 top-3 text-gray-500" />
+                <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full p-2 pl-10 pr-10 border border-gray-300 rounded"
+                />
+                <button
+                    type="button"
+                    className="absolute right-3 top-3 text-gray-500"
+                    onClick={() => setShowPassword(!showPassword)}
+                >
+                    {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+            </div>
+
+            <button
+                onClick={handleLogin}
+                disabled={isLoading}
+                className="w-80 bg-primary text-white py-2 rounded mb-2 flex items-center justify-center"
+            >
+                {isLoading ? <FaSpinner className="animate-spin" /> : 'Login'}
+            </button>
+
+            <Link to="/forgot-password" className="text-sm text-primary hover:underline mb-2">
+                Forgot Password?
+            </Link>
+            <Link to="/signup" className="text-sm text-gray-700 dark:text-gray-300 hover:underline">
+                Don’t have an account? Sign Up
+            </Link>
+        </div>
+    );
 }

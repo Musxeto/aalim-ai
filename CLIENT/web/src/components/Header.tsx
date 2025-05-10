@@ -16,7 +16,7 @@ export function Header({ onMenuClick, isMobile }: HeaderProps) {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/'); // Redirect to the welcome page after logout
+    navigate('/');
   };
 
   return (
@@ -47,7 +47,7 @@ export function Header({ onMenuClick, isMobile }: HeaderProps) {
                   <FaUserCircle className="w-6 h-6" />
                 </button>
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                     <button
                       onClick={handleLogout}
                       className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"

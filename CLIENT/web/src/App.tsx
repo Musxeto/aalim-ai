@@ -7,7 +7,6 @@ import { Chat, Message } from './types';
 import { askQuestion } from './services/api';
 import { useAuth } from './context/AuthContext';
 import { getUserChats, createChat } from './firebase';
-import { useNavigate } from 'react-router-dom';
 
 const WELCOME_MESSAGE: Message = {
   id: uuidv4(),
