@@ -40,19 +40,12 @@ function useIsMobile() {
 }
 
 export default function App() {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!currentUser) {
-      navigate('/'); // Redirect to the welcome page if not authenticated
-    }
-  }, [currentUser, navigate]);
 
   useEffect(() => {
     console.log("Auth state updated - currentUser:", currentUser?.uid);

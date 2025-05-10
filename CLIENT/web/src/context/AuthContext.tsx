@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, signIn, signOutUser, signUp, signInWithGoogle, sendPasswordResetEmail } from '../firebase';
+import { getCurrentUser, signIn, signOutUser, signUp,signInWithGoogle,sendPasswordResetEmail } from '../firebase';
 import { User } from 'firebase/auth';
-import { auth } from '../firebase';
+import {auth} from '../firebase';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -42,10 +42,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe; 
   }, []);
 
-  if (loading) {
-    return <div>Loading...</div>; // Prevent rendering children until loading is complete
-  }
-
   const signup = async (email: string, password: string) => {
     await signUp(email, password);
     const user = getCurrentUser();
@@ -84,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, logout, signup, signInGoogle, resetPassword }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout, signup,signInGoogle, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

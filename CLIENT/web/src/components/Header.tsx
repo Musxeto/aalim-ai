@@ -16,7 +16,7 @@ export function Header({ onMenuClick, isMobile }: HeaderProps) {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/'); // Navigate to the welcome page after logout
+    navigate('/'); // Redirect to the welcome page after logout
   };
 
   return (
