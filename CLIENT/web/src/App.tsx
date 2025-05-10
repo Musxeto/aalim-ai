@@ -39,7 +39,7 @@ function useIsMobile() {
 }
 
 export default function App() {
-  const { currentUser, loading } = useAuth();
+  const { currentUser } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -160,6 +160,7 @@ export default function App() {
           messages: [...chat.messages, newMessage]
         };
       }
+      console.log("chats: ",chat)
       return chat;
     }));
 

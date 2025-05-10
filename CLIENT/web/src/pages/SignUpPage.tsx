@@ -28,8 +28,23 @@ export function SignUpPage() {
     };
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 relative">
-        <button
+        <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900 relative overflow-hidden">
+
+            {/* Glitter Background */}
+            <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
+                {[...Array(30)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="absolute w-1 h-1 bg-white opacity-70 rounded-full animate-twinkle"
+                        style={{
+                            top: `${Math.random() * 100}%`,
+                            left: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 5}s`,
+                        }}
+                    />
+                ))}
+            </div>
+            <button
             onClick={() => navigate('/')}
             className="absolute top-4 left-4 text-primary hover:underline flex items-center gap-2"
         >

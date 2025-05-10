@@ -82,14 +82,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
             {message.content}
           </ReactMarkdown>
         </div>
-        <div
+        {/* <div
           className={clsx(
             'text-xs mt-2',
             isUser ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'
           )}
         >
-          {new Date(message.timestamp).toLocaleTimeString()}
-        </div>
+          {message.timestamp.toLocaleDateString()}
+        </div> */}
       </div>
       {isUser && (
         <div className="w-8 h-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary-light">

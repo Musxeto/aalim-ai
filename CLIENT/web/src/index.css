@@ -16,3 +16,17 @@
 .animate-twinkle {
     animation: twinkle 3s infinite ease-in-out;
 }
+
+@keyframes bounce-slow {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+  
+  .bounce-slow {
+    animation: bounce-slow 1s infinite;
+  }
+  
