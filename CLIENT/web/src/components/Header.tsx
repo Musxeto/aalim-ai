@@ -1,8 +1,8 @@
 import { FiMenu } from 'react-icons/fi';
-import { FaMosque } from 'react-icons/fa';
+import { FaMosque, FaUserCircle } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import { AuthModal } from './AuthModal';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -11,7 +11,13 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, isMobile }: HeaderProps) {
   const { currentUser, logout } = useAuth();
-  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/'); // Navigate to the welcome page after logout
+  };
 
   return (
     <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
@@ -31,30 +37,37 @@ export function Header({ onMenuClick, isMobile }: HeaderProps) {
               Aalim AI
             </h1>
           </div>
-          <div>
+          <div className="relative">
             {currentUser ? (
+              <div>
+                <button
+                  onClick={() => setDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
+                >
+                  <FaUserCircle className="w-6 h-6" />
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
               <button
-                onClick={logout}
+                onClick={() => navigate('/login')}
                 className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-4 py-2 transition-colors"
               >
-                {currentUser.email} Logout
+                Login
               </button>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setAuthModalOpen(true)}
-                  className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg px-4 py-2 transition-colors"
-                >
-                  Login
-                </button>
-              </div>
             )}
           </div>
         </div>
       </div>
-      {isAuthModalOpen && (
-        <AuthModal onClose={() => setAuthModalOpen(false)} />
-      )}
     </header>
   );
 }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { ThemeProvider } from './context/ThemeContext';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ChatContainer } from './components/ChatContainer';
@@ -8,6 +7,7 @@ import { Chat, Message } from './types';
 import { askQuestion } from './services/api';
 import { useAuth } from './context/AuthContext';
 import { getUserChats, createChat } from './firebase';
+import { useNavigate } from 'react-router-dom';
 
 const WELCOME_MESSAGE: Message = {
   id: uuidv4(),
@@ -39,26 +39,33 @@ function useIsMobile() {
   return isMobile;
 }
 
-function App() {
-  const { currentUser, loading } = useAuth();
+export default function App() {
+  const { currentUser } = useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
-    console.log("Auth state updated - currentUser:", currentUser?.uid, "loading:", loading);
-  }, [currentUser, loading]);
-  
+    if (!currentUser) {
+      navigate('/'); // Redirect to the welcome page if not authenticated
+    }
+  }, [currentUser, navigate]);
+
   useEffect(() => {
-    console.log("Chats state updated:", chats.map(c => ({id: c.id, title: c.title})));
+    console.log("Auth state updated - currentUser:", currentUser?.uid);
+  }, [currentUser]);
+
+  useEffect(() => {
+    console.log("Chats state updated:", chats.map(c => ({ id: c.id, title: c.title })));
   }, [chats]);
-  
+
   useEffect(() => {
     const fetchChats = async () => {
       if (!currentUser) return;
-  
+
       try {
         const userChats = await getUserChats(currentUser.uid);
         if (userChats.length === 0) {
@@ -77,24 +84,19 @@ function App() {
         console.error("Error fetching chats:", error);
       }
     };
-  
+
     fetchChats();
   }, [currentUser]);
-  
+
   const handleNewChat = async () => {
-    console.log("Current user state:", currentUser, "Auth loading:", loading);
-    
-    if (loading) {
-      console.log("Auth still loading, deferring chat creation");
-      return;
-    }
-  
+    console.log("Current user state:", currentUser);
+
     try {
       const newChatData = {
         title: formatChatName(new Date()),
         messages: [WELCOME_MESSAGE]
       };
-      
+
       if (currentUser) {
         console.log("User authenticated, creating Firestore chat");
         const savedChat = await createChat(currentUser.uid, newChatData);
@@ -122,8 +124,8 @@ function App() {
       setActiveChatId(newChat.id);
     }
   };
-  
-  
+
+
   const formatChatName = (date: Date) => {
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -146,7 +148,7 @@ function App() {
     } else if (!activeChatId) {
       setActiveChatId(chats[0].id);
     }
-    console.log("activeChatId: ",activeChatId)
+    console.log("activeChatId: ", activeChatId)
   }, [chats, activeChatId]);
 
   const handleSendMessage = async (content: string) => {
@@ -211,17 +213,13 @@ function App() {
       setIsLoading(false);
     }
   };
-  
+
   const activeChat = chats.find(chat => chat.id === activeChatId);
-  
-  if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
-  }
+
   return (
-    <ThemeProvider>
-      <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
-        {/* Desktop Sidebar */}
-        {!isMobile && (
+    <div className="flex h-screen overflow-hidden bg-gray-100 dark:bg-gray-900">
+      {/* Desktop Sidebar */}
+      {!isMobile && (
         <Sidebar
           chats={chats}
           activeChatId={activeChatId}
@@ -229,36 +227,33 @@ function App() {
           onNewChat={handleNewChat}
           isOpen={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-            variant="desktop"
-          />
-        )}
-        {/* Mobile Sidebar */}
-        {isMobile && (
-          <Sidebar
-            chats={chats}
-            activeChatId={activeChatId}
-            onChatSelect={setActiveChatId}
-            onNewChat={handleNewChat}
-            isOpen={isSidebarOpen}
-            onToggle={() => setIsSidebarOpen(false)}
-            variant="mobile"
+          variant="desktop"
         />
-        )}
-        <div className="flex-1 flex flex-col min-h-0">
-          <Header onMenuClick={() => setIsSidebarOpen(true)} isMobile={isMobile} />
-          <main className="flex-1 relative min-h-0">
-            {activeChat && (
-              <ChatContainer
-                messages={activeChat.messages}
-                onSendMessage={handleSendMessage}
-                isLoading={isLoading}
-              />
-            )}
-          </main>
-        </div>
+      )}
+      {/* Mobile Sidebar */}
+      {isMobile && (
+        <Sidebar
+          chats={chats}
+          activeChatId={activeChatId}
+          onChatSelect={setActiveChatId}
+          onNewChat={handleNewChat}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(false)}
+          variant="mobile"
+        />
+      )}
+      <div className="flex-1 flex flex-col min-h-0">
+        <Header onMenuClick={() => setIsSidebarOpen(true)} isMobile={isMobile} />
+        <main className="flex-1 relative min-h-0">
+          {activeChat && (
+            <ChatContainer
+              messages={activeChat.messages}
+              onSendMessage={handleSendMessage}
+              isLoading={isLoading}
+            />
+          )}
+        </main>
       </div>
-    </ThemeProvider>
+    </div>
   );
 }
-
-export default App;

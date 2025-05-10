@@ -1,13 +1,15 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, signIn, signOutUser, signUp } from '../firebase';
+import { getCurrentUser, signIn, signOutUser, signUp, signInWithGoogle, sendPasswordResetEmail } from '../firebase';
 import { User } from 'firebase/auth';
-import {auth} from '../firebase';
+import { auth } from '../firebase';
 
 interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  signInGoogle: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
 }
 
@@ -17,6 +19,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   logout: async () => {},
   signup: async () => {},
+  signInGoogle: async () => {},
+  resetPassword: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -38,6 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe; 
   }, []);
 
+  if (loading) {
+    return <div>Loading...</div>; // Prevent rendering children until loading is complete
+  }
+
   const signup = async (email: string, password: string) => {
     await signUp(email, password);
     const user = getCurrentUser();
@@ -58,8 +66,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('currentUser');
   };
 
+  const signInGoogle = async () => {
+    await signInWithGoogle();
+    const user = getCurrentUser();
+    setCurrentUser(user);
+    localStorage.setItem('currentUser', JSON.stringify(user));
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      await sendPasswordResetEmail(email);
+      console.log('Password reset email sent successfully');
+    } catch (error) {
+      console.error('Error sending password reset email:', error);
+      throw error;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ currentUser, loading, login, logout, signup }}>
+    <AuthContext.Provider value={{ currentUser, loading, login, logout, signup, signInGoogle, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

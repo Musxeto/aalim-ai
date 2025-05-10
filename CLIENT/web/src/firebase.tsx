@@ -4,6 +4,9 @@ import {
   signInWithEmailAndPassword,
   signOut,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -62,6 +65,26 @@ const signIn = async (email: string, password: string) => {
     throw error;
   }
 };
+
+const provider = new GoogleAuthProvider();
+provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+
+const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const token = credential?.accessToken;
+    const user = result.user;
+
+    console.log("Google sign-in successful:", user);
+
+    return user;
+  } catch (error: any) {
+    console.error("Google sign-in error:", error);
+    throw error;
+  }
+};
+
 
 const getUserChats = async (uid: string) => {
   const chatsRef = collection(db, "users", uid, "chats");
@@ -137,6 +160,16 @@ const createChat = async (uid: string, chatData: Omit<Chat, 'id'>): Promise<Chat
   }
 };
 
+const sendPasswordResetEmail = async (email: string) => {
+  try {
+    await firebaseSendPasswordResetEmail(auth, email);
+    console.log('Password reset email sent successfully');
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error;
+  }
+};
+
 export {
   signIn,
   signOutUser,
@@ -144,5 +177,7 @@ export {
   getCurrentUser,
   getUserChats,
   getMessagesForChat,
-  createChat
+  createChat,
+  sendPasswordResetEmail,
+  signInWithGoogle,
 };

@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import { FaSpinner } from 'react-icons/fa';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { Message } from '../types';
@@ -37,6 +38,11 @@ export function ChatContainer({ messages, onSendMessage, isLoading }: ChatContai
           <div ref={messagesEndRef} />
         </div>
       </div>
+      {isLoading && (
+        <div className="flex items-center justify-center py-2">
+          <FaSpinner className="animate-spin text-primary" />
+        </div>
+      )}
       <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-4xl mx-auto w-full">
           <ChatInput onSendMessage={onSendMessage} disabled={isLoading} />
@@ -44,4 +50,4 @@ export function ChatContainer({ messages, onSendMessage, isLoading }: ChatContai
       </div>
     </div>
   );
-} 
+}
