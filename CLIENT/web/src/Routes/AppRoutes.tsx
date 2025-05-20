@@ -7,7 +7,7 @@ import App from '../App';
 import { useAuth } from '../context/AuthContext';
 import { RequireAuth } from './RequireAuth';
 import { FaSpinner } from 'react-icons/fa';
-
+import Botpress from '../pages/Botpress';
 export function AppRoutes() {
   const { currentUser, loading } = useAuth();
 
@@ -29,7 +29,6 @@ export function AppRoutes() {
           <App />
         </RequireAuth>
       } />
-
       <Route path="*" element={<Navigate to="/404" replace />} />
       <Route path="/404" element={<div>404 Not Found</div>} />
     </Routes>
