@@ -8,7 +8,7 @@ export interface AskQuestionResponse {
   answer: string;
 }
 
-const API_URL = 'http://192.168.178.109:7860'; 
+const API_URL = 'http://192.168.0.114:7860'; 
 
 export const chatApi = {
   askQuestion: async (payload: AskQuestionPayload): Promise<AskQuestionResponse> => {

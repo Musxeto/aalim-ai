@@ -1,5 +1,5 @@
 // const API_BASE_URL = 'http://localhost:7860' ;
-const API_BASE_URL = 'http://172.20.10.5:7860' ;
+const API_BASE_URL = 'http://192.168.0.114:7860' ;
 export interface QuestionResponse {
   question: string;
   answer: string;
